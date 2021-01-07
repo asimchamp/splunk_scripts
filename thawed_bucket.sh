@@ -41,20 +41,28 @@ echo "Earliest time =""$earliest_epoch"
 
 echo "Latest time =""$latest_epoch"
 
+list_func()
+{
+bucket_id1=$(ls -d "$thawed_path"/* | grep db | awk -F"_" -v et="$earliest_epoch" -v lt="$latest_epoch", '$4>=et && $4<=lt{print $0"/"}')
+bucket_id2=$(ls -d "$thawed_path"/* | grep db | awk -F"_" -v et="$earliest_epoch" -v lt="$latest_epoch", '$5>=et && $5<=lt{print $0"/"}')
+echo "$bucket_id1" > /Isilon-cold/thawedb/bucket.txt
+echo "$bucket_id2" >> /Isilon-cold/thawedb/bucket.txt
+sort bucket.txt | uniq > /Isilon-cold/thawedb/db_bucket.txt
+
+}
+
 index_present=$(ls /Isilon-cold/thawedb/ | grep "$index_name" | wc -l )
 if [[ "$index_present" == 1 ]];
    then
    echo "Index Folder already created"
    echo "script performing copy process"
-   bucket_id=$(ls -d "$thawed_path"/* | grep db | awk -F"_" -v et="$earliest_epoch" -v lt="$latest_epoch", '$4>=et && $4<=lt{print $0"/"}')
-   echo "$bucket_id" > bucket.txt
-   cat /Isilon-cold/bucket.txt | while read line; do cp -r "$line" "$restore_path""$index_name"/; done
+   list_func
+   cat /Isilon-cold/thawedb/db_bucket.txt | while read line; do cp -r "$line" "$restore_path""$index_name"/; done
 else
    echo "Index folder not present"
    cd "$restore_path" || exit
    mkdir "$index_name"
    echo "script performing copy process"
-   bucket_id=$(ls -d "$thawed_path"/* | grep db | awk -F"_" -v et="$earliest_epoch" -v lt="$latest_epoch", '$4>=et && $4<=lt{print $0"/"}')
-   echo "$bucket_id" > bucket.txt
-   cat /Isilon-cold/bucket.txt | while read line; do cp -r "$line" "$restore_path""$index_name"/; done
+   list_func
+   cat /Isilon-cold/thawedb/db_bucket.txt | while read line; do cp -r "$line" "$restore_path""$index_name"/; done
 fi
