@@ -13,7 +13,7 @@ restore_path=(/Isilon-cold/thawedb/)
 
 # index path to restore
 echo "bucket will be copy in"
-copy_path=$("$restore_path""$index_name"/)
+echo "$restore_path"
 
 host=$(hostname)
 
@@ -48,7 +48,7 @@ if [[ "$index_present" == 1 ]];
    echo "script performing copy process"
    bucket_id=$(ls -d "$thawed_path"/* | grep db | awk -F"_" -v et="$earliest_epoch" -v lt="$latest_epoch", '$4>=et && $4<=lt{print $0"/"}')
    echo "$bucket_id" > bucket.txt
-   cat /Isilon-cold/bucket.txt | while read line; do cp -r "$line" /Isilon-cold/thawedb/"$index_name"/; done
+   cat /Isilon-cold/bucket.txt | while read line; do cp -r "$line" "$restore_path""$index_name"/; done
 else
    echo "Index folder not present"
    cd "$restore_path" || exit
@@ -56,5 +56,5 @@ else
    echo "script performing copy process"
    bucket_id=$(ls -d "$thawed_path"/* | grep db | awk -F"_" -v et="$earliest_epoch" -v lt="$latest_epoch", '$4>=et && $4<=lt{print $0"/"}')
    echo "$bucket_id" > bucket.txt
-   cat /Isilon-cold/bucket.txt | while read line; do cp -r "$line" /Isilon-cold/thawedb/"$index_name"/; done
+   cat /Isilon-cold/bucket.txt | while read line; do cp -r "$line" "$restore_path""$index_name"/; done
 fi
